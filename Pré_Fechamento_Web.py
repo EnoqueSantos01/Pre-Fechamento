@@ -43,7 +43,7 @@ if uploaded_file:
     filtro4 = (planilha['Dt. Canc.'] != '/  /')
     planilha.loc[filtro4, 'Observações'] = 'Verifique se a NF está cancelada'
 
-    filtro5 = (planilha['Tp. Mov'] == 'SAIDA') & (planilha['Chave Doc'].isna() | (planilha['Chave Doc'].str.strip() == ''))
+    filtro5 = (planilha['Tp. Mov'] == 'SAIDA') & (planilha['Chave Doc'].isna() | (planilha['Chave Doc'].str.strip() == '')) & (planilha['Retorno SEFAZ'] != 102) 
     planilha.loc[filtro5, 'Observações'] = 'NF de saída não pode estar sem chave'
 
     filtro6 = (planilha['CFOP'] == 6101) & (planilha['Icms Ret'] == 0) & (planilha['Difal ICMS'] == 0)
@@ -68,3 +68,4 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+

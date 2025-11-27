@@ -16,7 +16,7 @@ if uploaded_file:
     # Verifica se colunas existem
     colunas_necessarias = [
         'CFOP', 'Vlr ICMS Com', 'Desc. Produto', 'Retorno SEFAZ', 'Dt. Canc.',
-        'Tp. Mov', 'Chave Doc', 'Icms Ret', 'Difal ICMS', 'Documento'
+        'Tp. Mov', 'Chave Doc', 'Icms Ret', 'Difal ICMS', 'Documento', 'Especie'
     ]
 
     for coluna in colunas_necessarias:
@@ -86,6 +86,37 @@ if uploaded_file:
             # Adiciona a nova observação
             planilha.loc[linha_nf_quebra, 'Observações'] = obs_atual + mensagem
 
+        # Mapa de espécies e CFOPs válidos
+    cfop_validos = {
+        "CTE":  [1352, 2352],
+        "NFCEE": [1252, 2252],
+        "NFS":  [1933, 2933],
+        "NFSC": [1302, 2302],
+        "NTST": [1302, 2302],
+    }
+    
+    # Garantir que CFOP está numérico
+    planilha['CFOP'] = pd.to_numeric(planilha['CFOP'], errors='coerce')
+    
+    for especie, lista_cfop in cfop_validos.items():
+    
+        # Filtrar linhas da espécie específica
+        filtro_especie = planilha['Especie'] == especie
+    
+        # Filtrar CFOP incorreto
+        filtro_cfop_errado = ~planilha['CFOP'].isin(lista_cfop)
+    
+        # Filtro final: especie corresponde, mas CFOP não corresponde
+        filtro10 = filtro_especie & filtro_cfop_errado
+    
+        # Mensagem
+        mensagem = f"Espécie {especie} incompatível com o CFOP; "
+    
+        # Adicionar sem substituir
+        obs_atual = planilha.loc[filtro10, 'Observações'].fillna("").astype(str)
+        planilha.loc[filtro10, 'Observações'] = obs_atual + mensagem
+
+
 
     st.success("Análise concluída!")
 
@@ -100,6 +131,7 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 

@@ -61,32 +61,31 @@ if uploaded_file:
     # Converter Documento para número (caso esteja como texto)
     notas_saida['Documento'] = pd.to_numeric(notas_saida['Documento'], errors='coerce')
     
-    # Ordenar pela numeração da nota
+    # Ordenar pela numeração
     notas_saida = notas_saida.sort_values('Documento')
     
-    # Identificar quebras na sequência
     documentos = notas_saida['Documento'].tolist()
-    
-    faltando = []
     
     for i in range(len(documentos) - 1):
         atual = documentos[i]
         proximo = documentos[i + 1]
     
         if proximo != atual + 1:
-            # Lista todos os números faltando entre duas notas
-            for n in range(atual + 1, proximo):
-                faltando.append(n)
+            # Identifica notas faltando
+            faltando = list(range(atual + 1, proximo))
     
-    # Preencher observações
-    for nf_faltante in faltando:
-        planilha.loc[
-            (planilha['Tp. Mov'] == 'SAIDA'),
-            'Observações'
-        ] = planilha.loc[
-            (planilha['Tp. Mov'] == 'SAIDA'),
-            'Observações'
-        ].astype(str).replace('nan', '') + f" NF número {nf_faltante} não encontrada na sequência; "
+            # Monta mensagem final
+            mensagem = "; ".join([f"NF número {n} não encontrada na sequência" for n in faltando]) + "; "
+    
+            # Local da nota que receberá a observação (nota 'proximo')
+            linha_nf_quebra = (planilha['Tp. Mov'] == 'SAIDA') & (planilha['Documento'] == proximo)
+    
+            # Pega valor atual da observação (se estiver vazio, vira "")
+            obs_atual = planilha.loc[linha_nf_quebra, 'Observações'].fillna("").astype(str)
+    
+            # Adiciona a nova observação
+            planilha.loc[linha_nf_quebra, 'Observações'] = obs_atual + mensagem
+
 
     st.success("Análise concluída!")
 
@@ -101,5 +100,6 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 

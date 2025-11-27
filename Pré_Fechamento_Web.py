@@ -16,7 +16,7 @@ if uploaded_file:
     # Verifica se colunas existem
     colunas_necessarias = [
         'CFOP', 'Vlr ICMS Com', 'Desc. Produto', 'Retorno SEFAZ', 'Dt. Canc.',
-        'Tp. Mov', 'Chave Doc', 'Icms Ret', 'Difal ICMS'
+        'Tp. Mov', 'Chave Doc', 'Icms Ret', 'Difal ICMS', 'Documento'
     ]
 
     for coluna in colunas_necessarias:
@@ -54,6 +54,39 @@ if uploaded_file:
 
     filtro8 = (planilha['CFOP'] == 6108) & (planilha['Icms Ret'] == 0) & (planilha['Difal ICMS'] == 0)
     planilha.loc[filtro8, 'Observações'] = 'ICMS Ret ou Difal ICMS deve ter valor'
+    
+    # Selecionar apenas notas de SAIDA
+    notas_saida = planilha[planilha['Tp. Mov'] == 'SAIDA'].copy()
+
+    # Converter Documento para número (caso esteja como texto)
+    notas_saida['Documento'] = pd.to_numeric(notas_saida['Documento'], errors='coerce')
+    
+    # Ordenar pela numeração da nota
+    notas_saida = notas_saida.sort_values('Documento')
+    
+    # Identificar quebras na sequência
+    documentos = notas_saida['Documento'].tolist()
+    
+    faltando = []
+    
+    for i in range(len(documentos) - 1):
+        atual = documentos[i]
+        proximo = documentos[i + 1]
+    
+        if proximo != atual + 1:
+            # Lista todos os números faltando entre duas notas
+            for n in range(atual + 1, proximo):
+                faltando.append(n)
+    
+    # Preencher observações
+    for nf_faltante in faltando:
+        planilha.loc[
+            (planilha['Tp. Mov'] == 'SAIDA'),
+            'Observações'
+        ] = planilha.loc[
+            (planilha['Tp. Mov'] == 'SAIDA'),
+            'Observações'
+        ].astype(str).replace('nan', '') + f" NF número {nf_faltante} não encontrada na sequência; "
 
     st.success("Análise concluída!")
 
@@ -68,4 +101,5 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 

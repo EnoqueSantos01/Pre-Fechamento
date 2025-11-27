@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 
-st.title("Pré — Fechamento Fiscal")
+st.title("Validador de ICMS COMP — Automação Fiscal")
 
 uploaded_file = st.file_uploader("Faça upload do arquivo Excel", type=["xlsx"])
 
@@ -43,37 +43,8 @@ if uploaded_file:
     filtro4 = (planilha['Dt. Canc.'] != '/  /')
     planilha.loc[filtro4, 'Observações'] = 'Verifique se a NF está cancelada'
 
-    # --- Preparação segura das colunas ---
-    # Garante que Tp. Mov seja string e compare em maiúsculas
-    tp_mov = planilha['Tp. Mov'].astype(str).str.strip().str.upper()
-
-    # Garante que Chave Doc vire string (vazia quando NaN) e faça strip
-    chave_doc = planilha['Chave Doc'].where(planilha['Chave Doc'].notna(), '').astype(str).str.strip()
-
-    # Converte Retorno SEFAZ para número quando possível; valores inválidos viram NaN
-    retorno = pd.to_numeric(planilha['Retorno SEFAZ'], errors='coerce')
-
-    # Marca se o retorno é 101 ou 102 (True para esses casos)
-    retorno_101_102 = retorno.isin([101, 102])
-
-    # --- Filtro final: SAIDA, sem chave, e RETORNO SEFAZ diferente de 101/102 ---
-    filtro5 = (
-        (tp_mov == 'SAIDA') &
-        (chave_doc == '') &
-        (~retorno_101_102)
-    )
-
-    # Aplicar observação
+    filtro5 = (planilha['Tp. Mov'] == 'SAIDA') & (planilha['Chave Doc'].isna() | (planilha['Chave Doc'].str.strip() == ''))
     planilha.loc[filtro5, 'Observações'] = 'NF de saída não pode estar sem chave'
-
-    # --- DEBUG: informações para checar o que está marcando ---
-    num_marked = filtro5.sum()
-    st.write(f"Linhas marcadas pelo filtro5: {num_marked}")
-
-    # Mostra algumas colunas relevantes para inspecionar (local) — no Streamlit use st.write/ st.dataframe
-    debug_cols = ['Tp. Mov', 'Chave Doc', 'Retorno SEFAZ']
-    st.dataframe(planilha.loc[filtro5, debug_cols].head(30))
-
 
     filtro6 = (planilha['CFOP'] == 6101) & (planilha['Icms Ret'] == 0) & (planilha['Difal ICMS'] == 0)
     planilha.loc[filtro6, 'Observações'] = 'ICMS Ret ou Difal ICMS deve ter valor'
@@ -83,8 +54,6 @@ if uploaded_file:
 
     filtro8 = (planilha['CFOP'] == 6108) & (planilha['Icms Ret'] == 0) & (planilha['Difal ICMS'] == 0)
     planilha.loc[filtro8, 'Observações'] = 'ICMS Ret ou Difal ICMS deve ter valor'
-
-    
 
     st.success("Análise concluída!")
 
@@ -99,7 +68,3 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
-
-

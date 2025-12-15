@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from io import BytesIO
 
-st.title("Validador de ICMS COMP — Automação Fiscal")
+st.title("Pré - Fechamento 🧾")
 
 uploaded_file = st.file_uploader("Faça upload do arquivo Excel", type=["xlsx"])
 
@@ -131,6 +131,7 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 

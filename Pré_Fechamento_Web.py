@@ -6,6 +6,11 @@ st.title("Pré - Fechamento 🧾")
 
 uploaded_file = st.file_uploader("Faça upload do arquivo Excel", type=["xlsx"])
 
+planilha['Retorno SEFAZ'] = pd.to_numeric(
+    planilha['Retorno SEFAZ'], 
+    errors='coerce'
+)
+
 if uploaded_file:
     try:
         planilha = pd.read_excel(uploaded_file)
@@ -131,6 +136,7 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 

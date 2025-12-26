@@ -66,7 +66,7 @@ if uploaded_file:
     notas_entrada = planilha[planilha['Tp. Mov'] == 'ENTRADA'].copy()
 
     # Garantir documento numerico
-    saida['Documento'} = pd.to_numeric(saida['Documento'], errors='coerce')
+    saida['Documento'] = pd.to_numeric(saida['Documento'], errors='coerce')
     entrada['Documento'] = pd.to_numeric(entrada['Documento'], errors='coerce')
     
     # Ordenar pela numeração
@@ -152,6 +152,7 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 

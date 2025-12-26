@@ -63,38 +63,53 @@ if uploaded_file:
     
     # Selecionar apenas notas de SAIDA
     notas_saida = planilha[planilha['Tp. Mov'] == 'SAIDA'].copy()
+    notas_entrada = planilha[planilha['Tp. Mov'] == 'ENTRADA'].copy()
 
-    # Converter Documento para número (caso esteja como texto)
-    notas_saida['Documento'] = pd.to_numeric(notas_saida['Documento'], errors='coerce')
+    # Garantir documento numerico
+    saida['Documento'} = pd.to_numeric(saida['Documento'], errors='coerce')
+    entrada['Documento'] = pd.to_numeric(entrada['Documento'], errors='coerce')
     
     # Ordenar pela numeração
-    notas_saida = notas_saida.sort_values('Documento')
+    notas_saida = sorted(saida['Documento'].dropna().astype(int).tolist())
+    notas_entradas = set(entrada['Documento'].dropna().astype(int).tolist())
+
+    # Percorrer sequÇencia das SAÍDAS
     
-    documentos = notas_saida['Documento'].tolist()
-    
-    for i in range(len(documentos) - 1):
-        atual = documentos[i]
-        proximo = documentos[i + 1]
-    
-        if proximo != atual + 1:
+    for i in range(len(notas_saidas) - 1):
+        atual = notas_saidas[i]
+        proximo = notas_saidas[i + 1]
+
+        # Se houver quebra de sequência
+        
+        if proximo > atual + 1:
             # Identifica notas faltando
-            faltando = list(range(atual + 1, proximo))
+            faltando = range(atual + 1, proximo)
+
+            faltantes = []
+
+            for nf in faltando:
+                # Se não existe nem na SAIDA nem na ENTRADA
+                if nf not in notas_saida and nf not in notas_entrada:
+                    faltantes.append(nf)
+            # Se realmente hpuver quebra válida
+            if faltantes:
+                mensagem = "; ".join(
+                    [f"NF número {nf} não encontrada na sequência" for nf in faltantes]
+                ) + "; "
+
+                # Aplica observação SOMENTE na linha da NF nde houve a quebra
+                filtro_linha = (
+                    (planilha['Tp. Mov'] == 'SAIDA') &
+                    (planilha['Documento'] == proximo)
+                )
+                      
+                obs_atual = planilha.loc[filtro_linha, 'Observações'].fillna("").astype(str)
     
-            # Monta mensagem final
-            mensagem = "; ".join([f"NF número {n} não encontrada na sequência" for n in faltando]) + "; "
-    
-            # Local da nota que receberá a observação (nota 'proximo')
-            linha_nf_quebra = (planilha['Tp. Mov'] == 'SAIDA') & (planilha['Documento'] == proximo)
-    
-            # Pega valor atual da observação (se estiver vazio, vira "")
-            obs_atual = planilha.loc[linha_nf_quebra, 'Observações'].fillna("").astype(str)
-    
-            # Adiciona a nova observação
-            planilha.loc[linha_nf_quebra, 'Observações'] = obs_atual + mensagem
+                planilha.loc[filtro_linha, 'Observações'] = obs_atual + mensagem
 
         # Mapa de espécies e CFOPs válidos
     cfop_validos = {
-        "CTE":  [1352, 2352],
+        "CTE":  [1352, 2352, 2932, 1932, 1353],
         "NFCEE": [1252, 2252],
         "NFS":  [1933, 2933],
         "NFSC": [1302, 2302],
@@ -137,6 +152,7 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 

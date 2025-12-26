@@ -70,8 +70,8 @@ if uploaded_file:
     notas_entrada['Documento'] = pd.to_numeric(notas_entrada['Documento'], errors='coerce')
     
     # Ordenar pela numeração
-    notas_saida = sorted(saida['Documento'].dropna().astype(int).tolist())
-    notas_entradas = set(entrada['Documento'].dropna().astype(int).tolist())
+    notas_saida = sorted(notas_saida['Documento'].dropna().astype(int).tolist())
+    notas_entradas = set(notas_entrada['Documento'].dropna().astype(int).tolist())
 
     # Percorrer sequÇencia das SAÍDAS
     
@@ -152,6 +152,7 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 

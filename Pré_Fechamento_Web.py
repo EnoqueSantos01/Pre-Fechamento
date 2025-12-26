@@ -75,9 +75,9 @@ if uploaded_file:
 
     # Percorrer sequÇencia das SAÍDAS
     
-    for i in range(len(notas_saidas) - 1):
-        atual = notas_saidas[i]
-        proximo = notas_saidas[i + 1]
+    for i in range(len(notas_saida) - 1):
+        atual = notas_saida[i]
+        proximo = notas_saida[i + 1]
 
         # Se houver quebra de sequência
         
@@ -152,6 +152,7 @@ if uploaded_file:
         file_name="resultado_validado.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 
